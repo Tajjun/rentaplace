@@ -3,7 +3,7 @@ import { decodeListing } from '../db.ts';
 import { addDays, today } from '../config.ts';
 import { integer, requireValue } from '../errors.ts';
 import { validateDates } from './pricing.ts';
-import type { Listing, Stay } from '../types.ts';
+import type { CalendarBlock, Listing, Stay } from '../types.ts';
 export class BrokenStayError extends Error {
   stay: Stay;
   constructor(stay: Stay) { super(`Stay ${stay.id} has status broken`); this.name='BrokenStayError'; this.stay=stay; }
@@ -18,7 +18,7 @@ export function parseSearch(params: URLSearchParams): SearchQuery {
   requireValue(maxPrice >= minPrice, 'Maximum price must be at least the minimum price.');
   return {place:(params.get('place') || '').trim(),from,to,guests:integer(params.get('guests') || 2,'Guests',1,20),minPrice,maxPrice,bedrooms:integer(params.get('bedrooms') || 0,'Bedrooms',0,15),amenities:params.getAll('amenities').flatMap(v=>v.split(',')).filter(Boolean),instant:params.get('instant')==='1',sort,page:integer(params.get('page') || 1,'Page',1,10000),limit:integer(params.get('limit') || 12,'Limit',1,60)};
 }
-export function nearbyListings(homes: Listing[], stays: Stay[], q: SearchQuery): Listing[] {
+export function nearbyListings(homes: Listing[], holds: Array<Stay | CalendarBlock>, q: SearchQuery): Listing[] {
   const out: Listing[] = [], place=q.place.toLowerCase();
   for (const home of homes) {
     if (home.status!=='active' || home.sleeps<q.guests || home.bedrooms<q.bedrooms) continue;
@@ -27,10 +27,10 @@ export function nearbyListings(homes: Listing[], stays: Stay[], q: SearchQuery):
     if(q.instant && !home.instant_book) continue;
     if(!q.amenities.every(a=>home.amenities.includes(a))) continue;
     let free=true;
-    for(const stay of stays) {
-      if(stay.listing_id!==home.id) continue;
-      if(stay.status==='broken') throw new BrokenStayError(stay);
-      if(['confirmed','pending','completed','blocked'].includes(stay.status) && stay.from_date<q.to && q.from<stay.to_date) free=false;
+    for(const hold of holds) {
+      if(hold.listing_id!==home.id) continue;
+      if(hold.status==='broken') throw new BrokenStayError(hold);
+      if(['confirmed','pending','completed','blocked'].includes(hold.status) && hold.from_date<q.to && q.from<hold.to_date) free=false;
     }
     if(free) out.push(home);
   }
@@ -42,7 +42,7 @@ export function nearbyListings(homes: Listing[], stays: Stay[], q: SearchQuery):
 export function loadSearchData(db: DatabaseSync) {
   const homes=db.prepare('SELECT * FROM listings ORDER BY id').all().map(decodeListing);
   const stays=db.prepare("SELECT id,listing_id,from_date,to_date,status FROM bookings WHERE status <> 'broken'").all().map(row => ({...row})) as Stay[];
-  const blocks=db.prepare("SELECT id,listing_id,from_date,to_date,'blocked' as status FROM blocks").all().map(row => ({...row})) as Stay[];
+  const blocks=db.prepare("SELECT id,listing_id,from_date,to_date,'blocked' as status FROM blocks").all().map(row => ({...row})) as CalendarBlock[];
   return {homes,stays:[...stays,...blocks]};
 }
 export function search(db: DatabaseSync, q: SearchQuery) {

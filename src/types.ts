@@ -9,7 +9,20 @@ export type Listing = {
   amenities: string[]; photos: string[]; rating: number; review_count: number;
   created_at: string; updated_at: string;
 };
-export type Stay = { id: string; listing_id: string; from_date: string; to_date: string; status: string };
+export type Stay = {
+  id: string;
+  listing_id: string;
+  from_date: string;
+  to_date: string;
+  status: 'confirmed' | 'pending' | 'completed' | 'cancelled' | 'declined' | 'broken';
+};
+export type CalendarBlock = {
+  id: string;
+  listing_id: string;
+  from_date: string;
+  to_date: string;
+  status: 'blocked';
+};
 export type Quote = {
   slug: string; from: string; to: string; guests: number; nights: number;
   nightly: { date: string; weekend: boolean; cents: number }[];
