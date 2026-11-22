@@ -17,9 +17,19 @@ test('invalid demo payment, past dates and excess guests leave no reservation',(
  const {db}=fixture();for(const bad of [{cardNumber:'5555 5555 5555 4444'},{from:'2026-10-01',to:'2026-10-03'},{guests:9}])assert.throws(()=>createBooking(db,{...input,...bad},guest));
  assert.equal((db.prepare('SELECT COUNT(*) n FROM bookings').get() as any).n,0);db.close();
 });
-test('overlapping checkouts fail and adjacent stays are allowed',()=>{
- const {db}=fixture();createBooking(db,input,guest);assert.throws(()=>createBooking(db,input,otherGuest),{code:'DATES_UNAVAILABLE'});
- const adjacent=createBooking(db,{...input,from:'2026-11-13',to:'2026-11-14'},otherGuest);assert.equal(adjacent.booking.status,'confirmed');db.close();
+test('one-night stays are rejected while overlapping checkouts and adjacent minimum stays are handled',()=>{
+ const {db}=fixture();assert.throws(()=>quote(db,input.slug,input.from,'2026-11-11',2),{message:'Choose at least 2 nights for this home.'});assert.throws(()=>createBooking(db,{...input,to:'2026-11-11'},guest),{message:'Choose at least 2 nights for this home.'});assert.equal((db.prepare('SELECT COUNT(*) n FROM bookings').get() as any).n,0);
+ createBooking(db,input,guest);assert.throws(()=>createBooking(db,input,otherGuest),{code:'DATES_UNAVAILABLE'});
+ const adjacent=createBooking(db,{...input,from:'2026-11-13',to:'2026-11-15'},otherGuest);assert.equal(adjacent.booking.status,'confirmed');db.close();
+});
+test('custom listing minimums are enforced for quotes and direct bookings',()=>{
+ const {db}=fixture();db.prepare('UPDATE listings SET minimum_nights=4 WHERE slug=?').run(input.slug);
+ assert.throws(()=>quote(db,input.slug,input.from,input.to,2),{message:'Choose at least 4 nights for this home.'});
+ assert.throws(()=>createBooking(db,input,guest),{message:'Choose at least 4 nights for this home.'});
+ assert.equal((db.prepare('SELECT COUNT(*) n FROM bookings').get() as any).n,0);
+ const {booking}=createBooking(db,{...input,to:'2026-11-14'},guest);assert.equal(booking.nights,4);
+ db.prepare('UPDATE listings SET minimum_nights=1 WHERE slug=?').run(input.slug);
+ const oneNight=createBooking(db,{...input,from:'2026-11-14',to:'2026-11-15'},otherGuest);assert.equal(oneNight.booking.nights,1);db.close();
 });
 test('idempotent checkout creates one booking and refuses a mismatched retry',()=>{
  const {db}=fixture(),payload={...input,idempotencyKey:'a-stable-request'};

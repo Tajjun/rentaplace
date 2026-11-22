@@ -30,6 +30,7 @@ export function saveListing(db: DatabaseSync,input: any,user: Account | undefine
   const nightly=integer(input.nightlyCents ?? dollarsToCents(String(input.nightlyDollars || '')),'Nightly rate',100,1000000);
   const weekend=integer(input.weekendCents ?? dollarsToCents(String(input.weekendDollars || '')),'Weekend rate',100,1000000);
   const cleaning=integer(input.cleaningCents ?? dollarsToCents(String(input.cleaningDollars || '0')),'Cleaning fee',0,1000000);
+  const minimumNights=integer(input.minimumNights ?? old?.minimum_nights ?? 2,'Minimum stay',1,90);
   const policy=String(input.cancellationPolicy),status=String(input.status);
   requireValue(['flexible','moderate','strict'].includes(policy),'Choose a cancellation policy.');
   requireValue(['active','paused','closed'].includes(status),'Choose a listing status.');
@@ -41,8 +42,8 @@ export function saveListing(db: DatabaseSync,input: any,user: Account | undefine
   requireValue(Number.isFinite(lat)&&lat>=-90&&lat<=90&&Number.isFinite(lng)&&lng>=-180&&lng<=180,'Enter valid map coordinates.');
   const instant=input.instantBook===true || input.instantBook==='1' || input.instantBook==='on'?1:0;
   const id=old?.id || randomUUID(), newSlug=old?.slug || `${title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')}-${id.slice(0,6)}`;
-  if(old)db.prepare('UPDATE listings SET title=?,description=?,neighbourhood=?,region=?,lat=?,lng=?,sleeps=?,bedrooms=?,beds=?,bathrooms=?,nightly_cents=?,weekend_cents=?,cleaning_cents=?,cancellation_policy=?,status=?,instant_book=?,amenities=?,photos=?,updated_at=? WHERE id=?').run(title,description,neighbourhood,region,lat,lng,sleeps,bedrooms,beds,bathrooms,nightly,weekend,cleaning,policy,status,instant,JSON.stringify([...new Set(amen)]),JSON.stringify(photos),now(),id);
-  else db.prepare(`INSERT INTO listings (id,slug,host_id,title,description,neighbourhood,region,lat,lng,sleeps,bedrooms,beds,bathrooms,nightly_cents,weekend_cents,cleaning_cents,cancellation_policy,status,instant_book,amenities,photos,created_at,updated_at) VALUES (${Array(23).fill('?').join(',')})`).run(id,newSlug,account.id,title,description,neighbourhood,region,lat,lng,sleeps,bedrooms,beds,bathrooms,nightly,weekend,cleaning,policy,status,instant,JSON.stringify([...new Set(amen)]),JSON.stringify(photos),now(),now());
+  if(old)db.prepare('UPDATE listings SET title=?,description=?,neighbourhood=?,region=?,lat=?,lng=?,sleeps=?,bedrooms=?,beds=?,bathrooms=?,nightly_cents=?,weekend_cents=?,cleaning_cents=?,minimum_nights=?,cancellation_policy=?,status=?,instant_book=?,amenities=?,photos=?,updated_at=? WHERE id=?').run(title,description,neighbourhood,region,lat,lng,sleeps,bedrooms,beds,bathrooms,nightly,weekend,cleaning,minimumNights,policy,status,instant,JSON.stringify([...new Set(amen)]),JSON.stringify(photos),now(),id);
+  else db.prepare(`INSERT INTO listings (id,slug,host_id,title,description,neighbourhood,region,lat,lng,sleeps,bedrooms,beds,bathrooms,nightly_cents,weekend_cents,cleaning_cents,minimum_nights,cancellation_policy,status,instant_book,amenities,photos,created_at,updated_at) VALUES (${Array(24).fill('?').join(',')})`).run(id,newSlug,account.id,title,description,neighbourhood,region,lat,lng,sleeps,bedrooms,beds,bathrooms,nightly,weekend,cleaning,minimumNights,policy,status,instant,JSON.stringify([...new Set(amen)]),JSON.stringify(photos),now(),now());
   log('listing.updated',{listingId:id,created:!old,hostId:account.id,status});
   return listingBySlug(db,newSlug)!;
 }

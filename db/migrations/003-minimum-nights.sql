@@ -1,0 +1,1 @@
+ALTER TABLE listings ADD COLUMN minimum_nights INTEGER NOT NULL DEFAULT 2 CHECK(minimum_nights BETWEEN 1 AND 90);

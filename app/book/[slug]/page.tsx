@@ -69,6 +69,7 @@ export default async function Checkout({ params, searchParams }: { params: Promi
                 <div><p className="text-muted-foreground">Dates</p><p className="font-medium">{fullDate(p.from)}<br />to {fullDate(p.to)}</p></div>
                 <div><p className="text-muted-foreground">Guests</p><p className="font-medium">{plural(p.guests, 'guest')}</p></div>
               </div>
+              <p className="text-sm text-muted-foreground">This home requires at least {plural(home.minimum_nights, 'night')}.</p>
             </Step>
             <Step n={2} title="Who’s coming?">
               <div className="grid gap-4 sm:grid-cols-2">

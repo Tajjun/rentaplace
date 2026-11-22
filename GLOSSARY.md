@@ -114,4 +114,4 @@ Use “reservation request” for a pending stay awaiting host acceptance and �
 | Workspace (as a RentAPlace entity) | Host tools, demo account, or demo scenario | There is no RentAPlace workspace entity; Pi/Herdr workspaces are a separate technical concept. |
 | Price (without a qualifier) | Nightly rate or stay total | Search cards show a nightly rate before fees, while the quote shows the full stay total; name which one is meant. |
 | Dollar amount in domain logic | Integer cents | Money in the domain is always USD cents. |
-| Minimum stay | Do not use until a policy is defined | No minimum-stay rule exists in the product or code. |
+| Minimum stay | The minimum number of nights a guest must reserve for a listing; hosts set 1–90 nights, with new listings defaulting to 2. | Enforced for search, quotes, and reservation creation. |

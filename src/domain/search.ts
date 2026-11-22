@@ -19,9 +19,9 @@ export function parseSearch(params: URLSearchParams): SearchQuery {
   return {place:(params.get('place') || '').trim(),from,to,guests:integer(params.get('guests') || 2,'Guests',1,20),minPrice,maxPrice,bedrooms:integer(params.get('bedrooms') || 0,'Bedrooms',0,15),amenities:params.getAll('amenities').flatMap(v=>v.split(',')).filter(Boolean),instant:params.get('instant')==='1',sort,page:integer(params.get('page') || 1,'Page',1,10000),limit:integer(params.get('limit') || 12,'Limit',1,60)};
 }
 export function nearbyListings(homes: Listing[], holds: Array<Stay | CalendarBlock>, q: SearchQuery): Listing[] {
-  const out: Listing[] = [], place=q.place.toLowerCase();
+  const out: Listing[] = [], place=q.place.toLowerCase(), nights=validateDates(q.from,q.to);
   for (const home of homes) {
-    if (home.status!=='active' || home.sleeps<q.guests || home.bedrooms<q.bedrooms) continue;
+    if (home.status!=='active' || home.sleeps<q.guests || home.bedrooms<q.bedrooms || home.minimum_nights>nights) continue;
     if (place && !`${home.title} ${home.neighbourhood} ${home.region}`.toLowerCase().includes(place)) continue;
     if(home.nightly_cents<q.minPrice*100 || home.nightly_cents>q.maxPrice*100) continue;
     if(q.instant && !home.instant_book) continue;

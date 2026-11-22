@@ -83,6 +83,7 @@ export default async function HomeDetail({ params, searchParams }: Props) {
             <div className="space-y-1">
               <h2 className="text-3xl">A whole home, all to yourself.</h2>
               <p className="text-muted-foreground">{plural(home.sleeps, 'guest')} · {home.bedrooms === 0 ? 'Studio' : plural(home.bedrooms, 'bedroom')} · {plural(home.beds, 'bed')} · {home.bathrooms} {home.bathrooms === 1 ? 'bath' : 'baths'}</p>
+              <p className="text-sm text-muted-foreground">Minimum stay: {plural(home.minimum_nights, 'night')}</p>
             </div>
             <UserAvatar user={host} className="size-14 ring-4 ring-secondary" />
           </section>

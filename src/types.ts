@@ -4,7 +4,7 @@ export type Listing = {
   id: string; slug: string; title: string; description: string; host_id: string;
   neighbourhood: string; region: string; lat: number; lng: number;
   sleeps: number; bedrooms: number; beds: number; bathrooms: number;
-  nightly_cents: number; weekend_cents: number; cleaning_cents: number;
+  nightly_cents: number; weekend_cents: number; cleaning_cents: number; minimum_nights: number;
   cancellation_policy: Policy; status: 'active' | 'paused' | 'closed'; instant_book: number;
   amenities: string[]; photos: string[]; rating: number; review_count: number;
   created_at: string; updated_at: string;

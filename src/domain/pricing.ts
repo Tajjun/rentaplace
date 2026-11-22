@@ -11,6 +11,10 @@ export function validateDates(from: string, to: string, future = false): number 
   if (future) requireValue(from >= today(), 'Check-in cannot be in the past.');
   return nights;
 }
+export function validateMinimumStay(nights: number, minimumNights: number): void {
+  integer(minimumNights, 'Minimum stay', 1, 90);
+  requireValue(nights >= minimumNights, `Choose at least ${minimumNights} ${minimumNights === 1 ? 'night' : 'nights'} for this home.`);
+}
 export function isWeekend(date: string): boolean {
   const day = new Date(`${date}T00:00:00Z`).getUTCDay();
   return day === 5 || day === 6;

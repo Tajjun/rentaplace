@@ -4,7 +4,7 @@ import { mkdirSync, writeFileSync, renameSync } from 'node:fs';
 import { join } from 'node:path';
 import { listingBySlug, transaction } from '../db.ts';
 import { AppError, textInput, emailInput, requireValue, integer } from '../errors.ts';
-import { priceStay, validateDates } from './pricing.ts';
+import { priceStay, validateDates, validateMinimumStay } from './pricing.ts';
 import { schedulePayout } from './payouts.ts';
 import { cancellationRefund } from './cancellation.ts';
 import { log } from '../log.ts';
@@ -20,7 +20,8 @@ export function assertAvailable(db: DatabaseSync,listingId: string,from: string,
 export function quote(db: DatabaseSync,slug: string,from: string,to: string,guests=2) {
   const home=listingBySlug(db,slug);
   if(!home)throw new AppError(404,'NOT_FOUND','We could not find that home.');
-  validateDates(from,to,true);
+  const nights=validateDates(from,to,true);
+  validateMinimumStay(nights,home.minimum_nights);
   assertAvailable(db,home.id,from,to);
   return priceStay(home,from,to,guests);
 }
@@ -58,6 +59,7 @@ export function createBooking(db: DatabaseSync,input: any,account: Account | und
         return {booking:prior,replayed:true};
       }
     }
+    validateMinimumStay(validateDates(from,to),home.minimum_nights);
     assertAvailable(db,home.id,from,to);
     const q=priceStay(home,from,to,guests),id=randomUUID(),reference=`RAP-${id.slice(0,8).toUpperCase()}`;
     const status=home.instant_book && enabled(db,'instant_booking')?'confirmed':'pending';

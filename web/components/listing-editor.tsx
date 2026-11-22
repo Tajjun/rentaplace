@@ -15,7 +15,7 @@ import type { Listing } from '../../src/types.ts';
 
 const BLANK = {
   title: '', description: '', neighbourhood: '', region: '', sleeps: 4, bedrooms: 2, beds: 2, bathrooms: 1,
-  nightly_cents: 12000, weekend_cents: 15000, cleaning_cents: 5000, cancellation_policy: 'flexible', status: 'paused',
+  nightly_cents: 12000, weekend_cents: 15000, cleaning_cents: 5000, minimum_nights: 2, cancellation_policy: 'flexible', status: 'paused',
   instant_book: 1, amenities: ['Wifi', 'Kitchen'], photos: ['/img/photos/cabin-0.jpg', '/img/photos/interior-0.jpg'], lat: 38.95, lng: -120.05,
 };
 
@@ -67,10 +67,11 @@ export function ListingEditor({ home }: { home?: Listing }) {
             </fieldset>
           </Section>
           <Section title="Prices that feel right" description="Weekend rates apply to Friday and Saturday nights. Your host share is the nightly charges and cleaning fee, less a 3% platform fee.">
-            <div className="grid gap-4 sm:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <Field id="nightly" label="Weeknight rate (USD)"><Input id="nightly" type="number" name="nightlyDollars" min={1} max={10000} step=".01" defaultValue={(h.nightly_cents / 100).toFixed(2)} required /></Field>
               <Field id="weekend" label="Weekend rate (USD)"><Input id="weekend" type="number" name="weekendDollars" min={1} max={10000} step=".01" defaultValue={(h.weekend_cents / 100).toFixed(2)} required /></Field>
               <Field id="cleaning" label="Cleaning fee (USD)"><Input id="cleaning" type="number" name="cleaningDollars" min={0} max={10000} step=".01" defaultValue={(h.cleaning_cents / 100).toFixed(2)} required /></Field>
+              <Field id="minimum-nights" label="Minimum stay (nights)"><Input id="minimum-nights" type="number" name="minimumNights" min={1} max={90} defaultValue={h.minimum_nights} required /><span className="text-xs text-muted-foreground">Guests must book at least this many nights.</span></Field>
             </div>
           </Section>
           <Section title="How you welcome guests">

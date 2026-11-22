@@ -22,7 +22,7 @@ npm run rap -- search Tahoe --from 2026-11-10 --to 2026-11-13 --sort price --jso
 npm run rap -- book pine-hollow-cabin 2026-11-16 2026-11-19 2 --demo-payment --json
 ```
 
-Quotes validate dates, guest count and current availability. Each result includes a per-night array, subtotal, service fee, tax, total, and host share in cents. Search price filters are whole dollars; all stored amounts and returned price values are cents.
+Quotes validate dates, guest count, current availability, and the listing’s minimum stay. Each result includes a per-night array, subtotal, service fee, tax, total, and host share in cents. Search omits listings whose minimum stay is longer than the requested dates. Search price filters are whole dollars; all stored amounts and returned price values are cents.
 
 POST `/api/bookings` accepts `slug`, `from`, `to`, `guests`, `cardNumber`, optional `guestName`, `guestEmail`, and `idempotencyKey`. Use the test number only. A fresh booking returns 201; a matching idempotent retry returns 200. An overlapping reservation returns 409. Requests for homes without instant confirmation remain pending until the owning host responds.
 
@@ -31,7 +31,7 @@ POST `/api/bookings/{id}/cancel` computes the policy refund from the saved price
 ## Host operations
 
 - GET `/api/host/dashboard`, `/api/host/listings`, `/api/host/reservations`, `/api/host/payouts`.
-- POST `/api/host/listings` creates a home; PATCH `/api/host/listings/{slug}` accepts the complete editor payload.
+- POST `/api/host/listings` creates a home; PATCH `/api/host/listings/{slug}` accepts the complete editor payload. Include `minimumNights` (1–90); it defaults to 2 for new listings. Guests cannot quote or reserve a shorter stay.
 - GET `/api/host/calendar?month=2026-11&slug=lakeside-a-frame` returns daily state.
 - POST `/api/host/calendar/blocks` accepts a slug, from, to, and note; DELETE `/api/host/calendar/blocks/{id}` unblocks.
 - POST `/api/host/reservations/{id}/respond` accepts `{"action":"accept"}` or `{"action":"decline"}`.
